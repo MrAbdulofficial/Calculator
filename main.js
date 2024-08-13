@@ -1,89 +1,22 @@
-const calculator = {
-    displayValue: '0',
-    firstOperand: null,
-    waitingForSecondOperand: false,
-    operator: null,
+const exchangeRates = {
+    USD: { EUR: 0.85, INR: 74.57, GBP: 0.75 },
+    EUR: { USD: 1.18, INR: 88.04, GBP: 0.88 },
+    INR: { USD: 0.013, EUR: 0.011, GBP: 0.010 },
+    GBP: { USD: 1.33, EUR: 1.14, INR: 100.11 }
 };
 
-function updateDisplay() {
-    const display = document.querySelector('.calculator-screen');
-    display.value = calculator.displayValue;
-}
+document.getElementById('convertBtn').addEventListener('click', () => {
+    const amount = parseFloat(document.getElementById('amount').value);
+    const fromCurrency = document.getElementById('fromCurrency').value;
+    const toCurrency = document.getElementById('toCurrency').value;
 
-function handleNumber(number) {
-    const { displayValue, waitingForSecondOperand } = calculator;
-
-    if (waitingForSecondOperand === true) {
-        calculator.displayValue = number;
-        calculator.waitingForSecondOperand = false;
-    } else {
-        calculator.displayValue = displayValue === '0' ? number : displayValue + number;
-    }
-}
-
-function handleOperator(nextOperator) {
-    const { firstOperand, displayValue, operator } = calculator;
-    const inputValue = parseFloat(displayValue);
-
-    if (operator && calculator.waitingForSecondOperand) {
-        calculator.operator = nextOperator;
+    if (isNaN(amount)) {
+        document.getElementById('result').innerText = 'Please enter a valid amount';
         return;
     }
 
-    if (firstOperand == null) {
-        calculator.firstOperand = inputValue;
-    } else if (operator) {
-        const currentValue = firstOperand || 0;
-        const result = performCalculation[operator](currentValue, inputValue);
+    const conversionRate = exchangeRates[fromCurrency][toCurrency];
+    const convertedAmount = amount * conversionRate;
 
-        calculator.displayValue = String(result);
-        calculator.firstOperand = result;
-    }
-
-    calculator.waitingForSecondOperand = true;
-    calculator.operator = nextOperator;
-}
-
-const performCalculation = {
-    '/': (firstOperand, secondOperand) => firstOperand / secondOperand,
-    '*': (firstOperand, secondOperand) => firstOperand * secondOperand,
-    '+': (firstOperand, secondOperand) => firstOperand + secondOperand,
-    '-': (firstOperand, secondOperand) => firstOperand - secondOperand,
-    '=': (firstOperand, secondOperand) => secondOperand,
-};
-
-function resetCalculator() {
-    calculator.displayValue = '0';
-    calculator.firstOperand = null;
-    calculator.waitingForSecondOperand = false;
-    calculator.operator = null;
-}
-
-const keys = document.querySelector('.calculator-keys');
-keys.addEventListener('click', (event) => {
-    const { target } = event;
-    const { value } = target;
-
-    if (!target.matches('button')) {
-        return;
-    }
-
-    switch (value) {
-        case '+':
-        case '-':
-        case '*':
-        case '/':
-        case '=':
-            handleOperator(value);
-            break;
-        case 'all-clear':
-            resetCalculator();
-            break;
-        default:
-            handleNumber(value);
-    }
-
-    updateDisplay();
+    document.getElementById('result').innerText = `${amount} ${fromCurrency} = ${convertedAmount.toFixed(2)} ${toCurrency}`;
 });
-
-updateDisplay();
